@@ -1,6 +1,6 @@
 #!/usr/bin/python2
 # Requires scapy and netaddr. Run as root.
-
+# This script will run a simple TCP SYN sweep against ports 80 and 443 import sys
 
 import sys
 import multiprocessing
@@ -10,9 +10,9 @@ logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
 from scapy.all import *
 
 def usage():
-    print "quicksweep - a quick ICMP ping sweep tool"
+    print "tcpsweep - a quick TCP SYN sweep tool"
     print
-    print "Usage: quicksweep.py [network_IP_address]/[subnet]"
+    print "Usage: tcpsweep.py [network_IP_address]/[subnet]"
     print
     print "Make sure you run as root!"
     sys.exit(0)
@@ -28,7 +28,7 @@ def ping(jobq,resultsq):
             break
 
         try:
-            response = sr1(IP(dst=str(target))/ICMP(),timeout=2,verbose=0)
+            response = sr1(IP(dst=str(target))/TCP(sport=RandShort(),dport=[80,443],flags="S"),timeout=2,verbose=0)
             if response:
                 resultsq.put(target)
         except:
