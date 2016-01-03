@@ -30,7 +30,14 @@ def ping(jobq,resultsq):
         try:
             response = sr1(IP(dst=str(target))/ICMP(),timeout=2,verbose=0)
             if response:
-                resultsq.put(target)
+                if response.ttl == 64:
+                    target = str(target) + " Linux"
+                    resultsq.put(target)
+                elif response.ttl == 128:
+                    target = target + " Windows"
+                    resultsq.put(target)
+                else:
+                    resultsq.put(target)
         except:
             pass
 
