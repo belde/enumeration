@@ -1,21 +1,13 @@
 #!/usr/bin/python2
 # Requires scapy and netaddr. Run as root.
 
-
+import argparse
 import sys
 import multiprocessing
 import netaddr
 import logging
 logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
 from scapy.all import *
-
-def usage():
-    print "quicksweep - a quick ICMP ping sweep tool"
-    print
-    print "Usage: quicksweep.py [network_IP_address]/[subnet]"
-    print
-    print "Make sure you run as root!"
-    sys.exit(0)
 
 def ping(jobq,resultsq):
     while True:
@@ -30,14 +22,18 @@ def ping(jobq,resultsq):
         try:
             response = sr1(IP(dst=str(target))/ICMP(),timeout=2,verbose=0)
             if response:
-                if response.ttl == 64:
-                    target = str(target) + " Linux"
-                    resultsq.put(target)
-                elif response.ttl == 128:
-                    target = target + " Windows"
-                    resultsq.put(target)
+                if args.os_detect:
+                    if response.ttl == 64:
+                        target = str(target) + " Linux"
+                        resultsq.put(target)
+                    elif response.ttl == 128:
+                        target = target + " Windows"
+                        resultsq.put(target)
+                    else:
+                        resultsq.put(target)
                 else:
                     resultsq.put(target)
+
         except:
             pass
 
@@ -46,15 +42,15 @@ def ping(jobq,resultsq):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) == 1 or len(sys.argv) > 2:
-        usage()
 
-    # set target subnet
-    subnet = netaddr.IPNetwork(sys.argv[1])
+    parser = argparse.ArgumentParser()
+    parser.add_argument("network",type=str,help="[network_address]/[subnet]")
+    parser.add_argument("-o","--os_detect",help="simple os detection",action="store_true")
+    args = parser.parse_args()
 
-    sn_size = len(subnet)
-    pool_size = sn_size
+    subnet = netaddr.IPNetwork(args.network)
 
+    pool_size = len(subnet)
     jobs = multiprocessing.Queue()
     results = multiprocessing.Queue()
 

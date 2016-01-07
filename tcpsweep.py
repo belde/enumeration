@@ -1,6 +1,6 @@
 #!/usr/bin/python2
 # Requires scapy and netaddr. Run as root.
-# This script will run a simple TCP SYN sweep against ports 80 and 443 import sys
+# This script will run a simple TCP SYN sweep against ports 80 and 443
 
 import sys
 import multiprocessing
